@@ -5,14 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>7セグメントディスプレイ論理回路設計ツール</title>
     <style>
-        /* スタイルはそのまま（略） */
         body { font-family: 'Segoe UI', sans-serif; margin: 0 auto; max-width: 1200px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; }
         .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
         h1 { text-align: center; color: #4a5568; }
         .input-section { text-align: center; margin-bottom: 30px; }
-        .input-labels, .char-inputs { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .input-labels { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
         .input-label { width: 50px; text-align: center; font-weight: bold; color: #4a5568; }
-        .char-input { width: 50px; height: 50px; font-size: 20px; text-align: center; border-radius: 8px; background: #f7fafc; }
+        input { width: 300px; height: 50px; font-size: 24px; text-align: center; }
         button { padding: 10px 20px; border: none; border-radius: 25px; background: #667eea; color: white; font-size: 16px; margin: 10px; cursor: pointer; }
         .results { display: none; }
         .section { margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px; }
@@ -34,7 +33,7 @@
                 <div class="input-label">110</div>
                 <div class="input-label">111</div>
             </div>
-            <input type="text" id="charString" maxlength="8" placeholder="KOGAKUIN" style="width: 300px; height: 50px; font-size: 24px; text-align: center;">
+            <input type="text" id="charString" maxlength="8" placeholder="KOGAKUIN">
             <div style="margin-top: 10px; color: #666;">例：KOGAKUIN（英字8文字）</div>
             <button onclick="generateResults()">設計実行</button>
         </div>
@@ -44,7 +43,7 @@
                 <div id="truthTable"></div>
             </div>
             <div class="section">
-                <h3>論理式（出力 = 1 / 出力 = 0）</h3>
+                <h3>論理式（簡単化）</h3>
                 <div id="logicEquations"></div>
             </div>
         </div>
@@ -97,19 +96,32 @@
             const segs = ['Za','Zb','Zc','Zd','Ze','Zf','Zg'];
             let html = '';
 
+            const termToExpr = (termBits) => {
+                return termBits.map((bit, i) => {
+                    if (bit === 1) return 'ABC'[i];
+                    if (bit === 0) return 'ĀB̄C̄'[i * 2];
+                    return ''; // don't care
+                }).join('');
+            };
+
             segs.forEach((seg, segIndex) => {
                 const ones = [], zeros = [];
                 chars.forEach((char, idx) => {
-                    const bin = idx.toString(2).padStart(3, '0');
-                    const term = `${bin[0] === '1' ? 'A' : 'Ā'}${bin[1] === '1' ? 'B' : 'B̄'}${bin[2] === '1' ? 'C' : 'C̄'}`;
                     if (segmentPatterns[char][segIndex] === 1) {
-                        ones.push(term);
+                        ones.push(idx);
                     } else {
-                        zeros.push(term);
+                        zeros.push(idx);
                     }
                 });
-                html += `<div class="equation"><strong>${seg} = 1:</strong> ${ones.length > 0 ? ones.join(' + ') : '0'}</div>`;
-                html += `<div class="equation"><strong>${seg} = 0:</strong> ${zeros.length > 0 ? zeros.join(' + ') : '0'}</div><hr>`;
+
+                const qm = new QM(3);
+                const simplifiedOn = qm.simplify(ones);
+                const simplifiedOff = qm.simplify(zeros);
+                const exprOn = simplifiedOn.map(term => termToExpr(term)).join(' + ') || '0';
+                const exprOff = simplifiedOff.map(term => termToExpr(term)).join(' + ') || '0';
+
+                html += `<div class="equation"><strong>${seg} = 1（簡単化）:</strong> ${exprOn}</div>`;
+                html += `<div class="equation"><strong>${seg} = 0（簡単化）:</strong> ${exprOff}</div><hr>`;
             });
 
             container.innerHTML = html;
@@ -119,5 +131,6 @@
             if (e.key === 'Enter') generateResults();
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/quine-mccluskey@1.1.0/dist/quine-mccluskey.min.js"></script>
 </body>
 </html>
