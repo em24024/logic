@@ -1,549 +1,694 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>7セグメントディスプレイ論理回路設計ツール</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
-            min-height: 100vh;
-        }
-        
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        
-        h1 {
-            text-align: center;
-            color: #4a5568;
-            margin-bottom: 30px;
-            font-size: 2.2em;
-        }
-        
-        .input-section {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .char-inputs {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-        
-        .char-input {
-            width: 50px;
-            height: 50px;
-            text-align: center;
-            font-size: 20px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            background: #f7fafc;
-            transition: all 0.3s ease;
-        }
-        
-        .char-input:focus {
-            outline: none;
-            border-color: #667eea;
-            background: white;
-            transform: scale(1.05);
-        }
-        
-        .input-labels {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .input-label {
-            width: 50px;
-            font-weight: bold;
-            color: #4a5568;
-            text-align: center;
-        }
-        
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 10px;
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-        
-        .results {
-            display: none;
-        }
-        
-        .section {
-            margin: 30px 0;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border-left: 5px solid #667eea;
-        }
-        
-        .section h3 {
-            color: #4a5568;
-            margin-bottom: 15px;
-            font-size: 1.4em;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        th, td {
-            border: 1px solid #e2e8f0;
-            padding: 12px;
-            text-align: center;
-            font-family: 'Courier New', monospace;
-        }
-        
-        th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: bold;
-        }
-        
-        .karnaugh-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-        }
-        
-        .karnaugh-map {
-            display: inline-block;
-            margin: 10px;
-            text-align: center;
-        }
-        
-        .karnaugh-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #4a5568;
-        }
-        
-        .k-map {
-            display: grid;
-            grid-template-columns: 30px repeat(4, 40px);
-            grid-template-rows: 30px repeat(2, 40px);
-            gap: 1px;
-            background: white;
-            border: 2px solid #667eea;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .k-cell {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f7fafc;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-        }
-        
-        .k-header {
-            background: #667eea;
-            color: white;
-            font-size: 12px;
-        }
-        
-        .k-value {
-            background: white;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-        
-        .k-value.one {
-            background: #48bb78;
-            color: white;
-        }
-        
-        .logic-equations {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .equation {
-            margin: 10px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 16px;
-            padding: 10px;
-            background: #f7fafc;
-            border-radius: 5px;
-            border-left: 4px solid #667eea;
-        }
-        
-        .seven-segment {
-            display: inline-block;
-            width: 80px;
-            height: 120px;
-            margin: 0 10px;
-            position: relative;
-        }
-        
-        .segment {
-            position: absolute;
-            background: #ddd;
-        }
-        
-        .segment.on {
-            background: #ff4444;
-            box-shadow: 0 0 10px #ff4444;
-        }
-        
-        .seg-a { top: 5px; left: 10px; width: 60px; height: 8px; }
-        .seg-b { top: 10px; right: 5px; width: 8px; height: 50px; }
-        .seg-c { bottom: 10px; right: 5px; width: 8px; height: 50px; }
-        .seg-d { bottom: 5px; left: 10px; width: 60px; height: 8px; }
-        .seg-e { bottom: 10px; left: 5px; width: 8px; height: 50px; }
-        .seg-f { top: 10px; left: 5px; width: 8px; height: 50px; }
-        .seg-g { top: 56px; left: 10px; width: 60px; height: 8px; }
-        
-        .preview-section {
-            text-align: center;
-            margin: 20px 0;
-        }
-        
-        .char-preview {
-            display: inline-block;
-            margin: 0 15px;
-            text-align: center;
-        }
-        
-        .char-label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #4a5568;
-        }
-        
-        @media (max-width: 768px) {
-            .char-inputs, .input-labels {
-                gap: 5px;
-            }
-            
-            .char-input {
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
-            }
-            
-            .input-label {
-                width: 40px;
-                font-size: 12px;
-            }
-            
-            .karnaugh-container {
-                flex-direction: column;
-                align-items: center;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>領収書作成</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    /* 共通レイアウト */
+    body {
+      font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .input-section {
+      flex: 1;
+      min-width: 400px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+    .preview-section {
+      flex: 1;
+      min-width: 400px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #fff;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .client-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+    .client-row input {
+      flex: 1;
+    }
+    .btn-group {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    /* プレビュー領域は A4 サイズに近い高さに固定（例：297mm） */
+    #preview {
+      width: 210mm;
+      height: 297mm;
+      padding: 20mm;
+      margin: 0 auto;
+      box-sizing: border-box;
+      background-color: white;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .nav-buttons {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .radio-group {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 5px;
+    }
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+    .radio-label input {
+      width: auto;
+    }
+    /* 各受領書ブロックの共通スタイル（グリッドセル用） */
+    .receipt-block {
+      height: 100%;
+      box-sizing: border-box;
+      padding-top: 40px; /* 各ブロックの上部開始位置を固定 */
+      padding-left: 10px;
+      padding-right: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+    /* 各ブロック内の要素は余白を固定 */
+    .receipt-header {
+      text-align: center;
+    }
+    .receipt-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .receipt-amount {
+      text-align: center;
+      border-bottom: 2px solid #000;
+      padding-bottom: 5px;
+      margin-top: 10px;
+    }
+    .receipt-note {
+      text-align: center;
+      margin-top: 10px;
+    }
+    /* 点線による区切り：グリッドレイアウトの場合、各セルの下側に点線を表示 */
+    .receipt-block:not(.receipt-placeholder) {
+      border-bottom: 1px dotted #000;
+    }
+    /* プレースホルダーは空のブロック。高さはグリッドで均等に確保 */
+    .receipt-placeholder {
+      /* 内容なし。背景色で確認したい場合は下記コメントアウトを外す */
+      /* background-color: #f0f0f0; */
+    }
+    @media print {
+      .input-section, .btn-group, .nav-buttons {
+        display: none;
+      }
+      .preview-section {
+        border: none;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+      }
+      #preview {
+        box-shadow: none;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>7セグメントディスプレイ論理回路設計ツール</h1>
-        
-        <div class="input-section">
-            <p>3入力（A、B、C）で表示したい8文字のアルファベットを入力してください：</p>
-            
-            <div class="input-labels">
-                <div class="input-label">000</div>
-                <div class="input-label">001</div>
-                <div class="input-label">010</div>
-                <div class="input-label">011</div>
-                <div class="input-label">100</div>
-                <div class="input-label">101</div>
-                <div class="input-label">110</div>
-                <div class="input-label">111</div>
-            </div>
-            
-            <div class="char-inputs">
-                <input type="text" class="char-input" maxlength="1" id="char0" placeholder="K">
-                <input type="text" class="char-input" maxlength="1" id="char1" placeholder="O">
-                <input type="text" class="char-input" maxlength="1" id="char2" placeholder="G">
-                <input type="text" class="char-input" maxlength="1" id="char3" placeholder="A">
-                <input type="text" class="char-input" maxlength="1" id="char4" placeholder="K">
-                <input type="text" class="char-input" maxlength="1" id="char5" placeholder="U">
-                <input type="text" class="char-input" maxlength="1" id="char6" placeholder="I">
-                <input type="text" class="char-input" maxlength="1" id="char7" placeholder="N">
-            </div>
-            
-            <button onclick="generateResults()">設計実行</button>
-            <button onclick="loadExample()">例をロード</button>
+  <h1>領収書作成</h1>
+  <div class="container">
+    <div class="input-section">
+      <!-- 宛先ブロック：宛先ラベル＋一人／複数人のラジオボタン -->
+      <div class="form-group">
+        <label>宛先:</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" name="client-mode" value="single" checked> 一人
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="client-mode" value="multiple"> 複数人
+          </label>
         </div>
-        
-        <div id="results" class="results">
-            <div class="section">
-                <h3>文字プレビュー</h3>
-                <div id="charPreview" class="preview-section"></div>
-            </div>
-            
-            <div class="section">
-                <h3>真理値表</h3>
-                <div id="truthTable"></div>
-            </div>
-            
-            <div class="section">
-                <h3>カルノー図</h3>
-                <div id="karnaughMaps" class="karnaugh-container"></div>
-            </div>
-            
-            <div class="section">
-                <h3>簡単化後の論理式</h3>
-                <div id="logicEquations" class="logic-equations"></div>
-            </div>
+        <!-- 氏名の入力欄 -->
+        <div id="clients-container">
+          <div class="client-row" data-row="1">
+            <input type="text" class="client-name" placeholder="例: 山田 太郎" oninput="handleClientInput(this)">
+          </div>
         </div>
+      </div>
+      <!-- 領収日 -->
+      <div class="form-group">
+        <label for="date">領収日:</label>
+        <input type="date" id="date">
+      </div>
+      <!-- 単一モード用：金額入力欄 -->
+      <div class="form-group" id="receipt-amount-group">
+        <label for="receipt-amount">金額：</label>
+        <input type="number" id="receipt-amount" placeholder="金額を入力">
+      </div>
+      <!-- 複数人モード用オプション -->
+      <div id="multiple-options" style="display: none;">
+        <!-- 金額 -->
+        <div class="form-group" id="per-person-amount-group">
+          <label for="per-person-amount">金額：</label>
+          <input type="number" id="per-person-amount" placeholder="金額を入力">
+        </div>
+        <!-- 一人当たりの金額のチェックボックス -->
+        <div class="form-group" id="per-amount-mode-group">
+          <label>一人当たりの金額：</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="per-amount-mode" value="same" checked> 同額
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="per-amount-mode" value="different"> 異なる
+            </label>
+          </div>
+        </div>
+        <!-- 一枚あたりの人数 -->
+        <div class="form-group" id="persons-per-page-section">
+          <label>一枚あたりの人数（最大3）：</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="persons-per-page" value="1" checked> 1人分
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="persons-per-page" value="2"> 2人分
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="persons-per-page" value="3"> 3人分
+            </label>
+          </div>
+        </div>
+      </div>
+      <!-- 保存ボタン -->
+      <div id="save-buttons" class="btn-group">
+        <button id="update-btn" onclick="updatePreview()">更新</button>
+      </div>
     </div>
+    <div class="preview-section">
+      <div id="preview">
+        <!-- プレビュー表示領域 -->
+      </div>
+      <div id="nav-buttons" class="nav-buttons"></div>
+    </div>
+  </div>
 
-    <script>
-        // 7セグメントディスプレイの文字パターン定義
-        const segmentPatterns = {
-            'A': [1,1,1,0,1,1,1], 'B': [0,0,1,1,1,1,1], 'C': [1,0,0,1,1,1,0],
-            'D': [0,1,1,1,1,0,1], 'E': [1,0,0,1,1,1,1], 'F': [1,0,0,0,1,1,1],
-            'G': [1,1,1,1,1,1,0], 'H': [0,1,1,0,1,1,1], 'I': [0,0,0,0,1,1,0],
-            'J': [0,1,1,1,0,0,0], 'K': [0,1,1,0,1,1,1], 'L': [0,0,0,1,1,1,0],
-            'M': [1,1,1,0,1,1,0], 'N': [0,0,1,0,1,0,1], 'O': [1,1,1,1,1,1,0],
-            'P': [1,1,0,0,1,1,1], 'Q': [1,1,1,0,0,1,1], 'R': [0,0,0,0,1,0,1],
-            'S': [1,0,1,1,0,1,1], 'T': [0,0,0,1,1,1,1], 'U': [0,1,1,1,1,1,0],
-            'V': [0,1,1,1,1,1,0], 'W': [0,1,1,1,1,1,0], 'X': [0,1,1,0,1,1,1],
-            'Y': [0,1,1,1,0,1,1], 'Z': [1,1,0,1,1,0,1]
-        };
+  <script>
+    var currentClientIndex = 0; // 複数人モードのグループ分け用
 
-        function loadExample() {
-            const example = ['K', 'O', 'G', 'A', 'K', 'U', 'I', 'N'];
-            for (let i = 0; i < 8; i++) {
-                document.getElementById(`char${i}`).value = example[i];
-            }
-        }
+    document.addEventListener('DOMContentLoaded', function() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      document.getElementById('date').value = `${yyyy}-${mm}-${dd}`;
 
-        function generateResults() {
-            const chars = [];
-            for (let i = 0; i < 8; i++) {
-                const char = document.getElementById(`char${i}`).value.toUpperCase();
-                if (char && segmentPatterns[char]) {
-                    chars.push(char);
-                } else {
-                    alert(`文字 ${i} (${char}) は対応していません。A-Zの文字を入力してください。`);
-                    return;
-                }
-            }
+      updateModeDisplay();
+      updateSaveButtons();
 
-            generateCharPreview(chars);
-            generateTruthTable(chars);
-            generateKarnaughMaps(chars);
-            generateLogicEquations(chars);
-            
-            document.getElementById('results').style.display = 'block';
-        }
-
-        function generateCharPreview(chars) {
-            const container = document.getElementById('charPreview');
-            container.innerHTML = '';
-            
-            chars.forEach((char, index) => {
-                const preview = document.createElement('div');
-                preview.className = 'char-preview';
-                
-                const label = document.createElement('div');
-                label.className = 'char-label';
-                label.textContent = `${index.toString(2).padStart(3, '0')}: ${char}`;
-                
-                const display = document.createElement('div');
-                display.className = 'seven-segment';
-                
-                const pattern = segmentPatterns[char];
-                const segmentNames = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
-                
-                segmentNames.forEach((seg, i) => {
-                    const segment = document.createElement('div');
-                    segment.className = `segment seg-${seg} ${pattern[i] ? 'on' : ''}`;
-                    display.appendChild(segment);
-                });
-                
-                preview.appendChild(label);
-                preview.appendChild(display);
-                container.appendChild(preview);
-            });
-        }
-
-        function generateTruthTable(chars) {
-            const container = document.getElementById('truthTable');
-            
-            let html = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th rowspan="2">入力</th>
-                            <th rowspan="2">文字</th>
-                            <th rowspan="2">英字表示</th>
-                            <th colspan="7">各LEDのON/OFF</th>
-                        </tr>
-                        <tr>
-                            <th>Za</th><th>Zb</th><th>Zc</th><th>Zd</th><th>Ze</th><th>Zf</th><th>Zg</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            chars.forEach((char, index) => {
-                const binary = index.toString(2).padStart(3, '0');
-                const pattern = segmentPatterns[char];
-                
-                html += `
-                    <tr>
-                        <td>${binary}</td>
-                        <td>${char}</td>
-                        <td style="color: red; font-weight: bold;">${char}</td>
-                        ${pattern.map(bit => `<td>${bit}</td>`).join('')}
-                    </tr>
-                `;
-            });
-            
-            html += '</tbody></table>';
-            container.innerHTML = html;
-        }
-
-        function generateKarnaughMaps(chars) {
-            const container = document.getElementById('karnaughMaps');
-            container.innerHTML = '';
-            
-            const segmentNames = ['Za', 'Zb', 'Zc', 'Zd', 'Ze', 'Zf', 'Zg'];
-            
-            segmentNames.forEach((segName, segIndex) => {
-                const mapDiv = document.createElement('div');
-                mapDiv.className = 'karnaugh-map';
-                
-                const title = document.createElement('div');
-                title.className = 'karnaugh-title';
-                title.textContent = segName;
-                
-                const kMap = document.createElement('div');
-                kMap.className = 'k-map';
-                
-                // ヘッダー作成
-                kMap.innerHTML = `
-                    <div class="k-cell k-header"></div>
-                    <div class="k-cell k-header">C̄</div>
-                    <div class="k-cell k-header">C̄</div>
-                    <div class="k-cell k-header">C</div>
-                    <div class="k-cell k-header">C</div>
-                    <div class="k-cell k-header">ĀB̄</div>
-                    <div class="k-cell k-header">ĀB</div>
-                    <div class="k-cell k-header">AB</div>
-                    <div class="k-cell k-header">AB̄</div>
-                `;
-                
-                // カルノー図の値を配置（順序：00,01,11,10）
-                const karnaughOrder = [0, 1, 3, 2, 4, 5, 7, 6];
-                karnaughOrder.forEach(index => {
-                    const value = segmentPatterns[chars[index]][segIndex];
-                    const cell = document.createElement('div');
-                    cell.className = `k-cell k-value ${value ? 'one' : ''}`;
-                    cell.textContent = value;
-                    kMap.appendChild(cell);
-                });
-                
-                mapDiv.appendChild(title);
-                mapDiv.appendChild(kMap);
-                container.appendChild(mapDiv);
-            });
-        }
-
-        function generateLogicEquations(chars) {
-            const container = document.getElementById('logicEquations');
-            const segmentNames = ['Za', 'Zb', 'Zc', 'Zd', 'Ze', 'Zf', 'Zg'];
-            
-            let html = '';
-            
-            segmentNames.forEach((segName, segIndex) => {
-                const equation = simplifyLogic(chars, segIndex);
-                html += `<div class="equation">${segName} = ${equation}</div>`;
-            });
-            
-            container.innerHTML = html;
-        }
-
-        function simplifyLogic(chars, segmentIndex) {
-            // 各入力組み合わせでのセグメント値を取得
-            const values = chars.map(char => segmentPatterns[char][segmentIndex]);
-            
-            // 簡単な最小項表現を生成
-            const minterms = [];
-            values.forEach((value, index) => {
-                if (value === 1) {
-                    const binary = index.toString(2).padStart(3, '0');
-                    let term = '';
-                    term += binary[0] === '1' ? 'A' : 'Ā';
-                    term += binary[1] === '1' ? 'B' : 'B̄';
-                    term += binary[2] === '1' ? 'C' : 'C̄';
-                    minterms.push(term);
-                }
-            });
-            
-            if (minterms.length === 0) {
-                return '0';
-            } else if (minterms.length === 8) {
-                return '1';
-            } else {
-                // より高度な簡単化アルゴリズムの代わりに、基本的な組み合わせを返す
-                return minterms.length > 4 ? minterms.join(' + ') : minterms.join(' + ');
-            }
-        }
-
-        // 初期例をロード
-        window.onload = function() {
-            loadExample();
-        };
-
-        // エンターキーでの実行
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter' && event.target.classList.contains('char-input')) {
-                generateResults();
-            }
+      document.querySelectorAll('input[name="client-mode"]').forEach(radio => {
+        radio.addEventListener('change', function () {
+          updateModeDisplay();
+          updateSaveButtons();
         });
+      });
 
-        // 自動移動機能
-        document.querySelectorAll('.char-input').forEach((input, index) => {
-            input.addEventListener('input', function() {
-                if (this.value.length === 1 && index < 7) {
-                    document.getElementById(`char${index + 1}`).focus();
-                }
-            });
+      document.querySelectorAll('input[name="per-amount-mode"]').forEach(radio => {
+        radio.addEventListener('change', function () {
+          updateClientAmountField();
         });
-    </script>
+      });
+
+      updatePreview();
+    });
+
+    // モードに応じた表示項目の切り替え
+    function updateModeDisplay() {
+      const clientMode = document.querySelector('input[name="client-mode"]:checked').value;
+      if (clientMode === 'single') {
+        document.getElementById('receipt-amount-group').style.display = 'block';
+        document.getElementById('multiple-options').style.display = 'none';
+      } else {
+        document.getElementById('receipt-amount-group').style.display = 'none';
+        document.getElementById('multiple-options').style.display = 'block';
+      }
+    }
+
+    // 複数人モードで「異なる」場合、各クライアント行に金額入力欄を追加
+    function updateClientAmountField() {
+      const clientMode = document.querySelector('input[name="client-mode"]:checked').value;
+      const perAmountMode = (clientMode === 'multiple') ? document.querySelector('input[name="per-amount-mode"]:checked').value : null;
+      const clientRows = document.querySelectorAll('.client-row');
+      clientRows.forEach(row => {
+        const amountInput = row.querySelector('.client-amount');
+        if (clientMode === 'multiple' && perAmountMode === 'different') {
+          if (!amountInput) {
+            const newInput = document.createElement('input');
+            newInput.type = 'number';
+            newInput.className = 'client-amount';
+            newInput.placeholder = '金額';
+            newInput.style.marginLeft = '10px';
+            row.appendChild(newInput);
+          }
+        } else {
+          if (amountInput) {
+            amountInput.remove();
+          }
+        }
+      });
+    }
+
+    // 保存ボタンの更新（個別保存ボタンは【一枚あたりの人数】が1の場合のみ表示）
+    function updateSaveButtons() {
+      const clientMode = document.querySelector('input[name="client-mode"]:checked').value;
+      const container = document.getElementById('save-buttons');
+      let html = '<button id="update-btn" onclick="updatePreview()">更新</button> ';
+      if (clientMode === 'single') {
+        html += '<button id="download-single-btn">PDFで保存</button>';
+      } else {
+        let personsPerPage = parseInt(document.querySelector('input[name="persons-per-page"]:checked').value);
+        if (personsPerPage === 1) {
+          html += '<button id="download-individual-btn">個別保存</button> ';
+        }
+        html += '<button id="download-combined-btn">まとめて保存</button>';
+      }
+      container.innerHTML = html;
+      if (clientMode === 'single') {
+        document.getElementById('download-single-btn').addEventListener('click', generateSinglePDF);
+      } else {
+        if (document.getElementById('download-individual-btn')) {
+          document.getElementById('download-individual-btn').addEventListener('click', generateMultiplePDF);
+        }
+        document.getElementById('download-combined-btn').addEventListener('click', generateCombinedPDF);
+      }
+    }
+
+    function handleClientInput(input) {
+      const clientMode = document.querySelector('input[name="client-mode"]:checked').value;
+      if (clientMode === 'single') return;
+      const row = input.closest('.client-row');
+      const rowNumber = parseInt(row.getAttribute('data-row'));
+      const clientName = input.value;
+      if (clientName.trim().length > 0) {
+        const nextRow = document.querySelector(`.client-row[data-row="${rowNumber + 1}"]`);
+        if (!nextRow) {
+          addNewClientRow(rowNumber + 1);
+        }
+      }
+      cleanupEmptyClientRows();
+    }
+
+    function cleanupEmptyClientRows() {
+      let rows = Array.from(document.querySelectorAll('.client-row'));
+      let emptyRows = rows.filter(row => row.querySelector('.client-name').value.trim() === '');
+      if (emptyRows.length > 1) {
+        emptyRows.sort((a, b) => parseInt(a.getAttribute('data-row')) - parseInt(b.getAttribute('data-row')));
+        for (let i = 0; i < emptyRows.length - 1; i++) {
+          emptyRows[i].remove();
+        }
+        updateClientRowNumbers();
+      }
+    }
+
+    function addNewClientRow(rowNumber) {
+      const container = document.getElementById('clients-container');
+      const newRow = document.createElement('div');
+      newRow.className = 'client-row';
+      newRow.setAttribute('data-row', rowNumber);
+      newRow.innerHTML = `<input type="text" class="client-name" placeholder="例: 山田 太郎" oninput="handleClientInput(this)">`;
+      const clientMode = document.querySelector('input[name="client-mode"]:checked').value;
+      if (clientMode === 'multiple') {
+        const perAmountMode = document.querySelector('input[name="per-amount-mode"]:checked').value;
+        if (perAmountMode === 'different') {
+          const amountInput = document.createElement('input');
+          amountInput.type = 'number';
+          amountInput.className = 'client-amount';
+          amountInput.placeholder = '金額';
+          amountInput.style.marginLeft = '10px';
+          newRow.appendChild(amountInput);
+        }
+      }
+      container.appendChild(newRow);
+    }
+
+    function updateClientRowNumbers() {
+      const rows = document.querySelectorAll('.client-row');
+      rows.forEach((row, index) => {
+        row.setAttribute('data-row', index + 1);
+      });
+    }
+
+    // プレビュー更新（更新ボタン押下時のみ実行）
+    function updatePreview() {
+      const dateInput = document.getElementById('date').value || '';
+      let formattedDate = '';
+      if (dateInput) {
+        const date = new Date(dateInput);
+        formattedDate = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+      } else {
+        formattedDate = `${new Date().getFullYear()}年${new Date().getMonth()+1}月${new Date().getDate()}日`;
+      }
+      const clientMode = document.querySelector('input[name="client-mode"]:checked').value;
+      if (clientMode === 'single') {
+        const client = document.querySelector('.client-row .client-name').value.trim();
+        const amountValue = parseFloat(document.getElementById('receipt-amount').value) || 0;
+        generateReceiptPreviewSingle(client, formattedDate, amountValue);
+        document.getElementById('nav-buttons').innerHTML = '';
+      } else {
+        const personsPerPage = parseInt(document.querySelector('input[name="persons-per-page"]:checked').value);
+        const allClientRows = Array.from(document.querySelectorAll('.client-row'));
+        let validClientRows = allClientRows.filter(row => row.querySelector('.client-name').value.trim() !== '');
+        if (validClientRows.length === 0 && allClientRows.length > 0) {
+          validClientRows = [allClientRows[0]];
+        }
+        if (validClientRows.length === 0) {
+          document.getElementById('preview').innerHTML = '';
+          document.getElementById('nav-buttons').innerHTML = '';
+          return;
+        }
+        // グループの開始インデックス算出
+        let startIndex = Math.floor(currentClientIndex / personsPerPage) * personsPerPage;
+        let pageClients = validClientRows.slice(startIndex, startIndex + personsPerPage);
+        generateReceiptPreviewMultiple(pageClients, formattedDate);
+        // ページナビゲーション
+        let totalPages = Math.ceil(validClientRows.length / personsPerPage);
+        let currentPage = Math.floor(currentClientIndex / personsPerPage);
+        let navHtml = '';
+        if (currentPage > 0) {
+          navHtml += '<button onclick="prevPage()">前のページ</button> ';
+        } else {
+          navHtml += '<button style="opacity: 0.5; pointer-events: none;">前のページ</button> ';
+        }
+        if (currentPage < totalPages - 1) {
+          navHtml += '<button onclick="nextPage()">次のページ</button>';
+        } else {
+          navHtml += '<button style="opacity: 0.5; pointer-events: none;">次のページ</button>';
+        }
+        document.getElementById('nav-buttons').innerHTML = navHtml;
+      }
+      updateSaveButtons();
+    }
+
+    function generateReceiptPreviewSingle(client, formattedDate, amountValue) {
+      const previewHTML = `
+        <div style="display: block;">
+          <div class="receipt-block" style="padding-top:40px;">
+            <div class="receipt-header" style="text-align: center;"><h1 style="margin: 0;">領収書</h1></div>
+            <div class="receipt-info" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>${client} 様</div>
+              <div>領収日: ${formattedDate}</div>
+            </div>
+            <div class="receipt-amount" style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 5px;">
+              ￥${Number(amountValue).toLocaleString()}
+            </div>
+            <p class="receipt-note" style="text-align: center;">上記、正に領収いたしました</p>
+          </div>
+        </div>
+      `;
+      document.getElementById('preview').innerHTML = previewHTML;
+    }
+
+    // 複数人モード用プレビュー生成（グリッドレイアウトで固定行数を確保）
+    function generateReceiptPreviewMultiple(pageClients, formattedDate) {
+      const personsPerPage = parseInt(document.querySelector('input[name="persons-per-page"]:checked').value);
+      let containerStyle = "";
+      let receiptBlocks = "";
+      if (personsPerPage === 1) {
+        containerStyle = "display: block;";
+        pageClients.forEach(clientRow => {
+          receiptBlocks += generateReceiptContent(clientRow, formattedDate);
+        });
+      } else if (personsPerPage === 2) {
+        containerStyle = "display: grid; grid-template-rows: repeat(2, 1fr); height: 100%;";
+        pageClients.forEach(clientRow => {
+          receiptBlocks += generateReceiptContent(clientRow, formattedDate);
+        });
+        let missingCount = 2 - pageClients.length;
+        for (let i = 0; i < missingCount; i++) {
+          receiptBlocks += `<div class="receipt-block receipt-placeholder"></div>`;
+        }
+      } else if (personsPerPage === 3) {
+        containerStyle = "display: grid; grid-template-rows: repeat(3, 1fr); height: 100%;";
+        pageClients.forEach(clientRow => {
+          receiptBlocks += `<div class="receipt-block">` + generateReceiptContentInner(clientRow, formattedDate) + `</div>`;
+        });
+        let missingCount = 3 - pageClients.length;
+        for (let i = 0; i < missingCount; i++) {
+          receiptBlocks += `<div class="receipt-block receipt-placeholder"></div>`;
+        }
+      } else {
+        containerStyle = "display: block;";
+        pageClients.forEach(clientRow => {
+          receiptBlocks += generateReceiptContent(clientRow, formattedDate);
+        });
+      }
+      const previewHTML = `<div style="${containerStyle}">${receiptBlocks}</div>`;
+      document.getElementById('preview').innerHTML = previewHTML;
+    }
+
+    // 受領書ブロック生成（flex/ブロックレイアウト用）※1人分または複数人でgrid以外の場合
+    function generateReceiptContent(clientRow, formattedDate) {
+      let clientName = clientRow.querySelector('.client-name').value.trim();
+      let amountValue = 0;
+      const perAmountMode = document.querySelector('input[name="per-amount-mode"]:checked').value;
+      if (perAmountMode === 'same') {
+        amountValue = parseFloat(document.getElementById('per-person-amount').value) || 0;
+      } else {
+        const amountInput = clientRow.querySelector('.client-amount');
+        amountValue = amountInput ? (parseFloat(amountInput.value) || 0) : 0;
+      }
+      return `
+        <div class="receipt-block">
+          <div class="receipt-header"><h1 style="margin: 0;">領収書</h1></div>
+          <div class="receipt-info" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>${clientName} 様</div>
+            <div>領収日: ${formattedDate}</div>
+          </div>
+          <div class="receipt-amount">
+            ￥${Number(amountValue).toLocaleString()}
+          </div>
+          <p class="receipt-note">上記、正に領収いたしました</p>
+        </div>
+      `;
+    }
+
+    // 受領書ブロック生成（gridレイアウト用・内側コンテンツのみ）
+    function generateReceiptContentInner(clientRow, formattedDate) {
+      let clientName = clientRow.querySelector('.client-name').value.trim();
+      let amountValue = 0;
+      const perAmountMode = document.querySelector('input[name="per-amount-mode"]:checked').value;
+      if (perAmountMode === 'same') {
+        amountValue = parseFloat(document.getElementById('per-person-amount').value) || 0;
+      } else {
+        const amountInput = clientRow.querySelector('.client-amount');
+        amountValue = amountInput ? (parseFloat(amountInput.value) || 0) : 0;
+      }
+      return `
+          <div class="receipt-header" style="text-align: center;"><h1 style="margin: 0;">領収書</h1></div>
+          <div class="receipt-info" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>${clientName} 様</div>
+            <div>領収日: ${formattedDate}</div>
+          </div>
+          <div class="receipt-amount">
+            ￥${Number(amountValue).toLocaleString()}
+          </div>
+          <p class="receipt-note">上記、正に領収いたしました</p>
+      `;
+    }
+
+    function nextPage() {
+      const personsPerPage = parseInt(document.querySelector('input[name="persons-per-page"]:checked').value);
+      const allClientRows = Array.from(document.querySelectorAll('.client-row')).filter(row => row.querySelector('.client-name').value.trim() !== '');
+      let totalPages = Math.ceil(allClientRows.length / personsPerPage);
+      let currentPage = Math.floor(currentClientIndex / personsPerPage);
+      if (currentPage < totalPages - 1) {
+        currentClientIndex = (currentPage + 1) * personsPerPage;
+        updatePreview();
+      }
+    }
+
+    function prevPage() {
+      const personsPerPage = parseInt(document.querySelector('input[name="persons-per-page"]:checked').value);
+      let currentPage = Math.floor(currentClientIndex / personsPerPage);
+      if (currentPage > 0) {
+        currentClientIndex = (currentPage - 1) * personsPerPage;
+        updatePreview();
+      }
+    }
+
+    // PDF保存処理（各モード）
+    function generateSinglePDF() {
+      const { jsPDF } = window.jspdf;
+      html2canvas(document.getElementById('preview'), {
+        scale: 2,
+        useCORS: true,
+        logging: false
+      }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const canvasRatio = canvas.height / canvas.width;
+        const imageWidth = pdfWidth;
+        const imageHeight = imageWidth * canvasRatio;
+        if (imageHeight > pdfHeight) {
+          const scale = pdfHeight / imageHeight;
+          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth * scale, pdfHeight);
+        } else {
+          pdf.addImage(imgData, 'PNG', 0, 0, imageWidth, imageHeight);
+        }
+        const client = document.querySelector('.client-row .client-name').value.trim();
+        const fileName = `領収書_${client || 'single'}.pdf`;
+        pdf.save(fileName);
+      });
+    }
+
+    function generateMultiplePDF() {
+      const { jsPDF } = window.jspdf;
+      const dateInput = document.getElementById('date').value || '';
+      let formattedDate = '';
+      if (dateInput) {
+        const date = new Date(dateInput);
+        formattedDate = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+      }
+      const allClientRows = Array.from(document.querySelectorAll('.client-row'));
+      const validClientRows = allClientRows.filter(row => row.querySelector('.client-name').value.trim() !== '');
+      let index = 0;
+      function processClient() {
+        if (index >= validClientRows.length) return;
+        currentClientIndex = index;
+        updatePreview();
+        html2canvas(document.getElementById('preview'), {
+          scale: 2,
+          useCORS: true,
+          logging: false
+        }).then(canvas => {
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = pdf.internal.pageSize.getHeight();
+          const canvasRatio = canvas.height / canvas.width;
+          const imageWidth = pdfWidth;
+          const imageHeight = imageWidth * canvasRatio;
+          if (imageHeight > pdfHeight) {
+            const scale = pdfHeight / imageHeight;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth * scale, pdfHeight);
+          } else {
+            pdf.addImage(imgData, 'PNG', 0, 0, imageWidth, imageHeight);
+          }
+          const client = validClientRows[index].querySelector('.client-name').value.trim();
+          const fileName = `領収書_${client || ('client' + (index+1))}.pdf`;
+          pdf.save(fileName);
+          index++;
+          setTimeout(processClient, 500);
+        });
+      }
+      processClient();
+    }
+
+    function generateCombinedPDF() {
+      const { jsPDF } = window.jspdf;
+      const dateInput = document.getElementById('date').value || '';
+      let formattedDate = '';
+      if (dateInput) {
+        const date = new Date(dateInput);
+        formattedDate = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+      }
+      const allClientRows = Array.from(document.querySelectorAll('.client-row'));
+      const validClientRows = allClientRows.filter(row => row.querySelector('.client-name').value.trim() !== '');
+      if (validClientRows.length === 0) {
+        alert('宛先が設定されていません。');
+        return;
+      }
+      const personsPerPage = parseInt(document.querySelector('input[name="persons-per-page"]:checked').value);
+      const pdf = new jsPDF('p','mm','a4');
+      let processIndex = 0;
+      function processClientCombined() {
+        if (processIndex >= validClientRows.length) {
+          let fileName = prompt("保存するファイル名を入力してください（拡張子不要）", "領収書_まとめ");
+          if (!fileName || fileName.trim() === "") {
+            fileName = "領収書_まとめ";
+          }
+          fileName = fileName.trim() + ".pdf";
+          pdf.save(fileName);
+          return;
+        }
+        let pageClients = validClientRows.slice(processIndex, processIndex + personsPerPage);
+        currentClientIndex = processIndex;
+        generateReceiptPreviewMultiple(pageClients, formattedDate);
+        html2canvas(document.getElementById('preview'), {
+          scale: 2,
+          useCORS: true,
+          logging: false
+        }).then(canvas => {
+          const imgData = canvas.toDataURL('image/png');
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = pdf.internal.pageSize.getHeight();
+          const canvasRatio = canvas.height / canvas.width;
+          const imageWidth = pdfWidth;
+          const imageHeight = imageWidth * canvasRatio;
+          if (imageHeight > pdfHeight) {
+            const scale = pdfHeight / imageHeight;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth * scale, pdfHeight);
+          } else {
+            pdf.addImage(imgData, 'PNG', 0, 0, imageWidth, imageHeight);
+          }
+          processIndex += personsPerPage;
+          if (processIndex < validClientRows.length) {
+            pdf.addPage();
+          }
+          setTimeout(processClientCombined, 500);
+        });
+      }
+      processClientCombined();
+    }
+  </script>
 </body>
 </html>
