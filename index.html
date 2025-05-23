@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>7セグメントディスプレイ論理回路設計ツール</title>
 
-    <!-- MathJax CDN (非 async で安定読み込み) -->
-    <script id="MathJax-script"
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-    </script>
-
     <style>
         body { font-family: sans-serif; margin: 20px; background: #f0f0ff; }
         .container { background: white; padding: 20px; border-radius: 10px; }
@@ -29,7 +24,13 @@
 const segmentPatterns = {
     'A': [1,1,1,0,1,1,1], 'B': [0,0,1,1,1,1,1], 'C': [0,0,0,1,1,0,1],
     'D': [0,1,1,1,1,0,1], 'E': [1,0,0,1,1,1,1], 'F': [1,0,0,0,1,1,1],
-    'G': [1,0,1,1,1,1,0], 'H': [0,0,1,0,1,1,1]
+    'G': [1,0,1,1,1,1,0], 'H': [0,0,1,0,1,1,1],
+    'I': [0,0,1,0,0,0,0], 'J': [0,1,1,1,1,0,0], 'K': [1,0,1,0,1,1,1],
+    'L': [0,0,0,1,1,1,0], 'M': [1,1,1,0,1,1,0], 'N': [0,0,1,0,1,0,1],
+    'O': [0,0,1,1,1,0,1], 'P': [1,1,0,0,1,1,1], 'Q': [1,1,0,1,1,1,1],
+    'R': [0,0,0,0,1,0,1], 'S': [0,0,1,1,0,1,1], 'T': [0,0,0,1,1,1,1],
+    'U': [0,0,1,1,1,0,0], 'V': [0,1,1,1,1,1,0], 'W': [0,1,1,1,1,1,1],
+    'X': [0,1,1,0,1,1,1], 'Y': [0,1,1,1,0,1,1], 'Z': [1,1,0,1,1,0,0]
 };
 
 function generateKarnaughMaps() {
@@ -42,7 +43,7 @@ function generateKarnaughMaps() {
 
     const title = document.createElement('div');
     title.className = 'karnaugh-title';
-    title.innerHTML = "\\( " + segName + " \)">
+    title.textContent = segName;
     mapDiv.appendChild(title);
 
     const table = document.createElement('table');
@@ -51,7 +52,7 @@ function generateKarnaughMaps() {
     const karnaughValues = [values[0], values[1], values[3], values[2], values[4], values[5], values[7], values[6]];
     table.innerHTML = `
         <tr>
-            <td>\\( \overline{C} \)</td><td>\\( C \)</td><td>\\( C \)</td><td>\\( \overline{C} \)</td>
+            <td>~C</td><td>C</td><td>C</td><td>~C</td>
         </tr>
         <tr>
             <td>${karnaughValues[0]}</td><td>${karnaughValues[1]}</td><td>${karnaughValues[2]}</td><td>${karnaughValues[3]}</td>
@@ -62,10 +63,6 @@ function generateKarnaughMaps() {
 
     mapDiv.appendChild(table);
     container.appendChild(mapDiv);
-
-    if (window.MathJax) {
-        MathJax.typesetPromise([container]);
-    }
 }
 
 window.onload = generateKarnaughMaps;
