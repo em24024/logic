@@ -1,136 +1,655 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>7セグメントディスプレイ論理回路設計ツール</title>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0 auto; max-width: 1200px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; }
-        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #4a5568; }
-        .input-section { text-align: center; margin-bottom: 30px; }
-        .input-labels { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
-        .input-label { width: 50px; text-align: center; font-weight: bold; color: #4a5568; }
-        input { width: 300px; height: 50px; font-size: 24px; text-align: center; }
-        button { padding: 10px 20px; border: none; border-radius: 25px; background: #667eea; color: white; font-size: 16px; margin: 10px; cursor: pointer; }
-        .results { display: none; }
-        .section { margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px; }
-        .equation { margin: 5px 0; padding: 5px 10px; background: #f0f0f0; border-left: 4px solid #667eea; }
-    </style>
+  <meta charset="UTF-8">
+  <title>7セグメント英字表示ツール</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 0;
+      margin: 0;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 10px;
+      font-weight: 300;
+      font-size: 2.5em;
+    }
+    
+    .input-section {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    
+    .input-section p {
+      color: #7f8c8d;
+      margin-bottom: 25px;
+      font-size: 1.1em;
+    }
+    
+    .input-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    input[type="text"] {
+      font-size: 18px;
+      padding: 15px 20px;
+      border: 2px solid #e0e6ed;
+      border-radius: 12px;
+      width: 300px;
+      transition: all 0.3s ease;
+      background: #fafbfc;
+      outline: none;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    
+    input[type="text"]:focus {
+      border-color: #3498db;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+    
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    #errorMsg {
+      color: #e74c3c;
+      margin-top: 15px;
+      font-weight: 500;
+    }
+    
+    .section {
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 25px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+    
+    h2 {
+      color: #2c3e50;
+      border-bottom: 3px solid #ecf0f1;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+      font-weight: 400;
+    }
+    
+    table { 
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 13px;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    th, td { 
+      border: 1px solid #e8eaed;
+      padding: 10px 12px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    
+    th { 
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #495057;
+    }
+    
+    td.left-align { 
+      text-align: left;
+    }
+    
+    .segment { 
+      fill: #f0f0f0;
+      stroke: #e0e0e0;
+      stroke-width: 0.5;
+      transition: fill 0.2s ease;
+    }
+    
+    .on { 
+      fill: #ff3030;
+      stroke: #cc0000;
+    }
+    
+    .mini-kmap { 
+      border-collapse: collapse;
+      margin: auto;
+      position: relative;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    
+    .mini-kmap td, .mini-kmap th { 
+      border: 1px solid #dee2e6;
+      width: 40px;
+      height: 30px;
+      font-size: 14px;
+      position: relative;
+      background: white;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .mini-kmap th {
+      background: #f1f3f4;
+      font-weight: 500;
+    }
+    
+    .logic-formula { 
+      text-align: left;
+      padding: 10px;
+      font-family: 'Courier New', monospace;
+      background: #f8f9fa;
+    }
+    
+    .kmap-cell {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .kmap-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .group-overlay {
+      position: absolute;
+      pointer-events: none;
+      z-index: 2;
+      box-sizing: border-box;
+      border-radius: 4px;
+    }
+    
+    /* 優しい色味のグループ */
+    .group-0 { border: 2px solid #6a994e; background: rgba(106, 153, 78, 0.15); }
+    .group-1 { border: 2px solid #577590; background: rgba(87, 117, 144, 0.15); }
+    .group-2 { border: 2px solid #f4a261; background: rgba(244, 162, 97, 0.15); }
+    .group-3 { border: 2px solid #e76f51; background: rgba(231, 111, 81, 0.15); }
+    .group-4 { border: 2px solid #7209b7; background: rgba(114, 9, 183, 0.15); }
+    .group-5 { border: 2px solid #2a9d8f; background: rgba(42, 157, 143, 0.15); }
+    .group-6 { border: 2px solid #f72585; background: rgba(247, 37, 133, 0.15); }
+    .group-7 { border: 2px solid #4361ee; background: rgba(67, 97, 238, 0.15); }
+    
+    /* バー記号のスタイル改善 */
+    .overline {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .overline::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background-color: currentColor;
+    }
+    
+    .double-overline {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .double-overline::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background-color: currentColor;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+      
+      input[type="text"] {
+        width: 100%;
+        max-width: 300px;
+      }
+      
+      .input-group {
+        flex-direction: column;
+      }
+      
+      table {
+        font-size: 11px;
+      }
+      
+      th, td {
+        padding: 6px 8px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>7セグメントディスプレイ論理回路設計ツール</h1>
-        <div class="input-section">
-            <p>3入力（A、B、C）で表示したい8文字のアルファベットを入力してください：</p>
-            <div class="input-labels">
-                <div class="input-label">000</div>
-                <div class="input-label">001</div>
-                <div class="input-label">010</div>
-                <div class="input-label">011</div>
-                <div class="input-label">100</div>
-                <div class="input-label">101</div>
-                <div class="input-label">110</div>
-                <div class="input-label">111</div>
-            </div>
-            <input type="text" id="charString" maxlength="8" placeholder="KOGAKUIN">
-            <div style="margin-top: 10px; color: #666;">例：KOGAKUIN（英字8文字）</div>
-            <button onclick="generateResults()">設計実行</button>
-        </div>
-        <div id="results" class="results">
-            <div class="section">
-                <h3>真理値表</h3>
-                <div id="truthTable"></div>
-            </div>
-            <div class="section">
-                <h3>論理式（簡単化）</h3>
-                <div id="logicEquations"></div>
-            </div>
-        </div>
+  <div class="container">
+    <h1>7セグメント英字表示ツール</h1>
+    
+    <div class="input-section">
+      <p>アルファベット8文字を入力してください</p>
+      <div class="input-group">
+        <input type="text" id="inputText" maxlength="8" placeholder="例: KOGAKUIN">
+        <button onclick="generateTable()">生成</button>
+      </div>
+      <p id="errorMsg"></p>
     </div>
+    
+    <div id="truthTable"></div>
+    <div id="beforeSimplification"></div>
+    <div id="positiveLogic"></div>
+    <div id="negativeLogic"></div>
+  </div>
 
-    <script>
-        const segmentPatterns = {
-            'A': [1,1,1,0,1,1,1], 'B': [0,0,1,1,1,1,1], 'C': [0,0,0,1,1,0,1],
-            'D': [0,1,1,1,1,0,1], 'E': [1,0,0,1,1,1,1], 'F': [1,0,0,0,1,1,1],
-            'G': [1,0,1,1,1,1,0], 'H': [0,0,1,0,1,1,1], 'I': [0,0,1,0,0,0,0],
-            'J': [0,1,1,1,1,0,0], 'K': [1,0,1,0,1,1,1], 'L': [0,0,0,1,1,1,0],
-            'M': [1,1,1,0,1,1,0], 'N': [0,0,1,0,1,0,1], 'O': [0,0,1,1,1,0,1],
-            'P': [1,1,0,0,1,1,1], 'Q': [1,1,0,1,1,1,1], 'R': [0,0,0,0,1,0,1],
-            'S': [0,0,1,1,0,1,1], 'T': [0,0,0,1,1,1,1], 'U': [0,0,1,1,1,0,0],
-            'V': [0,1,1,1,1,1,0], 'W': [0,1,1,1,1,1,1], 'X': [0,1,1,0,1,1,1],
-            'Y': [0,1,1,1,0,1,1], 'Z': [1,1,0,1,1,0,0]
-        };
+  <script>
+    const ledMap = {
+      'A': [1,1,1,0,1,1,1], 'B': [0,0,1,1,1,1,1], 'C': [0,0,0,1,1,0,1],
+      'D': [0,1,1,1,1,0,1], 'E': [1,0,0,1,1,1,1], 'F': [1,0,0,0,1,1,1],
+      'G': [1,0,1,1,1,1,0], 'H': [0,0,1,0,1,1,1], 'I': [0,0,1,0,0,0,0],
+      'J': [0,1,1,1,1,0,0], 'K': [1,0,1,0,1,1,1], 'L': [0,0,0,1,1,1,0],
+      'M': [1,1,1,0,1,1,0], 'N': [0,0,1,0,1,0,1], 'O': [0,0,1,1,1,0,1],
+      'P': [1,1,0,0,1,1,1], 'Q': [1,1,0,1,1,1,1], 'R': [0,0,0,0,1,0,1],
+      'S': [0,0,1,1,0,1,1], 'T': [0,0,0,1,1,1,1], 'U': [0,0,1,1,1,0,0],
+      'V': [0,1,1,1,1,1,0], 'W': [0,1,1,1,1,1,1], 'X': [0,1,1,0,1,1,1],
+      'Y': [0,1,1,1,0,1,1], 'Z': [1,1,0,1,1,0,0]
+    };
 
-        function generateResults() {
-            const input = document.getElementById('charString').value.toUpperCase();
-            if (input.length !== 8) return alert("8文字を入力してください");
+    const mintermToBits = {
+      0:[0,0,0], 1:[0,1,0], 2:[1,1,0], 3:[1,0,0],
+      4:[0,0,1], 5:[0,1,1], 6:[1,1,1], 7:[1,0,1]
+    };
 
-            const chars = input.split('');
-            for (let char of chars) {
-                if (!segmentPatterns[char]) {
-                    alert(`${char} はサポートされていません`);
-                    return;
-                }
+    const kmapLayout = [
+      [0, 1, 2, 3],
+      [4, 5, 6, 7]
+    ];
+
+    function simplifyMintermsByStepRules(minterms) {
+      if (minterms.length === 8 || minterms.sort().join(',') === '0,1,2,3,4,5,6,7') {
+        return { formula: '1', groups: [] };
+      }
+      if (minterms.length === 0) {
+        return { formula: '0', groups: [] };
+      }
+
+      const allQuads = [
+        [0,1,2,3], [0,1,4,5], [0,3,4,7], [1,2,5,6], [2,3,6,7], [4,5,6,7]
+      ];
+      const allPairs = [
+        [0,1], [0,3], [0,4], [1,2], [1,5], [2,3], [2,6], [3,7], [4,5], [4,7], [5,6], [6,7]
+      ];
+
+      const validQuads = allQuads.filter(quad => quad.every(m => minterms.includes(m)));
+      const validPairs = allPairs.filter(pair => pair.every(m => minterms.includes(m)));
+
+      function findOptimalCover() {
+        let bestCover = null;
+        let minGroups = Infinity;
+
+        function search(remainingMinterms, currentCover) {
+          if (remainingMinterms.length === 0) {
+            if (currentCover.length < minGroups) {
+              minGroups = currentCover.length;
+              bestCover = [...currentCover];
             }
+            return;
+          }
 
-            generateTruthTable(chars);
-            generateLogicEquations(chars);
-            document.getElementById('results').style.display = 'block';
+          if (currentCover.length >= minGroups) return;
+
+          for (const quad of validQuads) {
+            const covered = quad.filter(m => remainingMinterms.includes(m));
+            if (covered.length > 0) {
+              const newRemaining = remainingMinterms.filter(m => !quad.includes(m));
+              search(newRemaining, [...currentCover, quad]);
+            }
+          }
+
+          for (const pair of validPairs) {
+            const covered = pair.filter(m => remainingMinterms.includes(m));
+            if (covered.length > 0) {
+              const newRemaining = remainingMinterms.filter(m => !pair.includes(m));
+              search(newRemaining, [...currentCover, pair]);
+            }
+          }
+
+          if (remainingMinterms.length > 0) {
+            const minterm = remainingMinterms[0];
+            const newRemaining = remainingMinterms.slice(1);
+            search(newRemaining, [...currentCover, [minterm]]);
+          }
         }
 
-        function generateTruthTable(chars) {
-            const container = document.getElementById('truthTable');
-            let html = `<table border="1"><tr><th>入力</th><th>文字</th><th>Za</th><th>Zb</th><th>Zc</th><th>Zd</th><th>Ze</th><th>Zf</th><th>Zg</th></tr>`;
-            chars.forEach((char, idx) => {
-                const bin = idx.toString(2).padStart(3, '0');
-                const pattern = segmentPatterns[char];
-                html += `<tr><td>${bin}</td><td>${char}</td>` + pattern.map(v => `<td>${v}</td>`).join('') + `</tr>`;
-            });
-            html += `</table>`;
-            container.innerHTML = html;
+        search([...minterms], []);
+        return bestCover || [];
+      }
+
+      const optimalGroups = findOptimalCover();
+
+      const formula = optimalGroups.map(group => {
+        const bitsList = group.map(m => mintermToBits[m]);
+        const simplifiedTerm = ['A', 'B', 'C'].map((v, i) => {
+          const bitValues = bitsList.map(bits => bits[i]);
+          const allZero = bitValues.every(b => b === 0);
+          const allOne = bitValues.every(b => b === 1);
+          return allZero ? `<span class="overline">${v}</span>` : allOne ? v : '';
+        }).join('');
+        return simplifiedTerm;
+      }).filter(Boolean).join(' + ') || '0';
+
+      return { formula, groups: optimalGroups };
+    }
+
+    function bitsToMinterm(bits) {
+      const map = {
+        '000': 0, '010': 1, '110': 2, '100': 3,
+        '001': 4, '011': 5, '111': 6, '101': 7
+      };
+      return map[bits];
+    }
+
+    function createSegmentSVG(leds) {
+      return `<svg width="35" height="55" viewBox="0 0 70 110">
+        <!-- 上セグメント (a) -->
+        <polygon points="8,5 62,5 67,10 57,15 18,15 13,10" class="segment ${leds[0] ? 'on' : ''}"/>
+        
+        <!-- 右上セグメント (b) -->
+        <polygon points="62,8 67,13 67,50 62,55 57,50 57,18" class="segment ${leds[1] ? 'on' : ''}"/>
+        
+        <!-- 右下セグメント (c) -->
+        <polygon points="62,58 67,63 67,100 62,105 57,100 57,63" class="segment ${leds[2] ? 'on' : ''}"/>
+        
+        <!-- 下セグメント (d) -->
+        <polygon points="8,105 62,105 67,100 57,95 18,95 13,100" class="segment ${leds[3] ? 'on' : ''}"/>
+        
+        <!-- 左下セグメント (e) -->
+        <polygon points="8,58 13,63 18,63 18,100 13,100 8,95" class="segment ${leds[4] ? 'on' : ''}"/>
+        
+        <!-- 左上セグメント (f) -->
+        <polygon points="8,8 13,13 18,18 18,50 13,55 8,50" class="segment ${leds[5] ? 'on' : ''}"/>
+        
+        <!-- 中央セグメント (g) -->
+        <polygon points="15,52 18,50 57,50 62,52 57,58 18,58" class="segment ${leds[6] ? 'on' : ''}"/>
+      </svg>`;
+    }
+
+    function mintermToPosition(minterm) {
+      for (let row = 0; row < kmapLayout.length; row++) {
+        for (let col = 0; col < kmapLayout[row].length; col++) {
+          if (kmapLayout[row][col] === minterm) {
+            return { row, col };
+          }
         }
+      }
+      return null;
+    }
 
-        function generateLogicEquations(chars) {
-            const container = document.getElementById('logicEquations');
-            const segs = ['Za','Zb','Zc','Zd','Ze','Zf','Zg'];
-            let html = '';
+    function calculateGroupBounds(group) {
+      const positions = group.map(mintermToPosition).filter(pos => pos !== null);
+      if (positions.length === 0) return null;
 
-            const termToExpr = (termBits) => {
-                return termBits.map((bit, i) => {
-                    if (bit === 1) return 'ABC'[i];
-                    if (bit === 0) return 'ĀB̄C̄'[i * 2];
-                    return ''; // don't care
-                }).join('');
-            };
-
-            segs.forEach((seg, segIndex) => {
-                const ones = [], zeros = [];
-                chars.forEach((char, idx) => {
-                    if (segmentPatterns[char][segIndex] === 1) {
-                        ones.push(idx);
-                    } else {
-                        zeros.push(idx);
-                    }
-                });
-
-                const qm = new QM(3);
-                const simplifiedOn = qm.simplify(ones);
-                const simplifiedOff = qm.simplify(zeros);
-                const exprOn = simplifiedOn.map(term => termToExpr(term)).join(' + ') || '0';
-                const exprOff = simplifiedOff.map(term => termToExpr(term)).join(' + ') || '0';
-
-                html += `<div class="equation"><strong>${seg} = 1（簡単化）:</strong> ${exprOn}</div>`;
-                html += `<div class="equation"><strong>${seg} = 0（簡単化）:</strong> ${exprOff}</div><hr>`;
-            });
-
-            container.innerHTML = html;
+      if (group.length === 4) {
+        if (group.includes(0) && group.includes(1) && group.includes(2) && group.includes(3)) {
+          return { top: 0, left: 0, width: 4, height: 1 };
         }
+        if (group.includes(4) && group.includes(5) && group.includes(6) && group.includes(7)) {
+          return { top: 1, left: 0, width: 4, height: 1 };
+        }
+        if (group.includes(0) && group.includes(1) && group.includes(4) && group.includes(5)) {
+          return { top: 0, left: 0, width: 2, height: 2 };
+        }
+        if (group.includes(1) && group.includes(2) && group.includes(5) && group.includes(6)) {
+          return { top: 0, left: 1, width: 2, height: 2 };
+        }
+        if (group.includes(2) && group.includes(3) && group.includes(6) && group.includes(7)) {
+          return { top: 0, left: 2, width: 2, height: 2 };
+        }
+        if (group.includes(0) && group.includes(3) && group.includes(4) && group.includes(7)) {
+          return [
+            { top: 0, left: 0, width: 1, height: 2 },
+            { top: 0, left: 3, width: 1, height: 2 }
+          ];
+        }
+      }
 
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') generateResults();
+      const minRow = Math.min(...positions.map(p => p.row));
+      const maxRow = Math.max(...positions.map(p => p.row));
+      const minCol = Math.min(...positions.map(p => p.col));
+      const maxCol = Math.max(...positions.map(p => p.col));
+
+      if (group.length === 2) {
+        if ((group.includes(0) && group.includes(3)) || (group.includes(4) && group.includes(7))) {
+          const row = group.includes(0) ? 0 : 1;
+          return [
+            { top: row, left: 0, width: 1, height: 1 },
+            { top: row, left: 3, width: 1, height: 1 }
+          ];
+        }
+      }
+
+      return {
+        top: minRow,
+        left: minCol,
+        width: maxCol - minCol + 1,
+        height: maxRow - minRow + 1
+      };
+    }
+
+    function generateMiniKmap(minterms, mark, groups = []) {
+      const headers = ['<span class="overline">AB</span>','<span class="overline">A</span>B','AB','A<span class="overline">B</span>'];
+      const rowHeaders = ['<span class="overline">C</span>','C'];
+      
+      let html = '<div class="kmap-wrapper">';
+      
+      html += '<table class="mini-kmap">';
+      html += '<tr><th></th>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+      
+      rowHeaders.forEach((rowHeader, r) => {
+        html += `<tr><th>${rowHeader}</th>`;
+        for (let c = 0; c < 4; c++) {
+          const m = kmapLayout[r][c];
+          const isMarked = minterms.includes(m);
+          html += `<td class="kmap-cell">${isMarked ? mark : ''}</td>`;
+        }
+        html += '</tr>';
+      });
+      html += '</table>';
+      
+      html += '</div>';
+      
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = html;
+      document.body.appendChild(tempDiv);
+      
+      const wrapper = tempDiv.querySelector('.kmap-wrapper');
+      const table = wrapper.querySelector('.mini-kmap');
+      const cells = table.querySelectorAll('td.kmap-cell');
+      
+      const tableRect = table.getBoundingClientRect();
+      const firstDataCell = cells[0];
+      const cellRect = firstDataCell.getBoundingClientRect();
+      
+      const cellWidth = cellRect.width;
+      const cellHeight = cellRect.height;
+      const startLeft = cellRect.left - tableRect.left;
+      const startTop = cellRect.top - tableRect.top;
+      
+      groups.forEach((group, groupIndex) => {
+        const bounds = calculateGroupBounds(group);
+        if (!bounds) return;
+        
+        if (Array.isArray(bounds)) {
+          bounds.forEach(bound => {
+            const top = startTop + bound.top * cellHeight;
+            const left = startLeft + bound.left * cellWidth;
+            const width = bound.width * cellWidth;
+            const height = bound.height * cellHeight;
+            
+            const overlay = document.createElement('div');
+            overlay.className = `group-overlay group-${groupIndex % 8}`;
+            overlay.style.cssText = `
+              top: ${top}px;
+              left: ${left}px;
+              width: ${width}px;
+              height: ${height}px;
+            `;
+            wrapper.appendChild(overlay);
+          });
+        } else {
+          const top = startTop + bounds.top * cellHeight;
+          const left = startLeft + bounds.left * cellWidth;
+          const width = bounds.width * cellWidth;
+          const height = bounds.height * cellHeight;
+          
+          const overlay = document.createElement('div');
+          overlay.className = `group-overlay group-${groupIndex % 8}`;
+          overlay.style.cssText = `
+            top: ${top}px;
+            left: ${left}px;
+            width: ${width}px;
+            height: ${height}px;
+          `;
+          wrapper.appendChild(overlay);
+        }
+      });
+      
+      const finalHTML = wrapper.outerHTML;
+      document.body.removeChild(tempDiv);
+      
+      return finalHTML;
+    }
+
+    function generateLogicFormula(outputs, value) {
+      const minterms = [];
+      for (let i = 0; i < 8; i++) {
+        if (outputs[i].val === value) {
+          minterms.push(bitsToMinterm(outputs[i].bits));
+        }
+      }
+      
+      if (minterms.length === 0) return '0';
+      
+      return minterms.map(m => {
+        const bits = mintermToBits[m];
+        return bits.map((bit, i) => {
+          const var_name = ['A', 'B', 'C'][i];
+          return bit === 1 ? var_name : `<span class="overline">${var_name}</span>`;
+        }).join('');
+      }).join(' + ');
+    }
+
+    function generateTable() {
+      const input = document.getElementById('inputText').value.toUpperCase();
+      const err = document.getElementById('errorMsg');
+      const truth = document.getElementById('truthTable');
+      const before = document.getElementById('beforeSimplification');
+      const positive = document.getElementById('positiveLogic');
+      const negative = document.getElementById('negativeLogic');
+      
+      err.textContent = '';
+      truth.innerHTML = '';
+      before.innerHTML = '';
+      positive.innerHTML = '';
+      negative.innerHTML = '';
+
+      if (!/^[A-Z]{8}$/.test(input)) {
+        err.textContent = '英字8文字を正しく入力してください（A〜Z）';
+        return;
+      }
+
+      const labels = ['Za','Zb','Zc','Zd','Ze','Zf','Zg'];
+      const outs = Array.from({length: 7}, () => []);
+      let html = '<div class="section"><h2>真理値表</h2><table><tr><th>ABC</th><th>文字</th><th>表示</th>' +
+        labels.map(l => `<th>${l}</th>`).join('') + '</tr>';
+
+      for (let i = 0; i < 8; i++) {
+        const ch = input[i];
+        const bits = i.toString(2).padStart(3,'0');
+        const leds = ledMap[ch] || [0,0,0,0,0,0,0];
+        html += `<tr><td>${bits}</td><td>${ch}</td><td>${createSegmentSVG(leds)}</td>`;
+        leds.forEach((v,j) => {
+          outs[j].push({val: v, bits});
+          html += `<td>${v}</td>`;
         });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/quine-mccluskey@1.1.0/dist/quine-mccluskey.min.js"></script>
+        html += '</tr>';
+      }
+      html += '</table></div>';
+      truth.innerHTML = html;
+
+      let beforeHtml = '<div class="section"><h2>簡単化前の論理式</h2><table><tr><th>出力</th><th>=1</th><th>=0</th></tr>';
+      labels.forEach((label, i) => {
+        const formula1 = generateLogicFormula(outs[i], 1);
+        const formula0 = generateLogicFormula(outs[i], 0);
+        beforeHtml += `<tr><td>${label}</td><td class="logic-formula">${formula1}</td><td class="logic-formula">${formula0}</td></tr>`;
+      });
+      beforeHtml += '</table></div>';
+      before.innerHTML = beforeHtml;
+
+      let positiveHtml = '<div class="section"><h2>正論理（Za〜Zg）のカルノー図と簡単化</h2><table><tr><th>出力</th><th>カルノー図</th><th>簡単化</th></tr>';
+      labels.forEach((label, i) => {
+        const ones = outs[i].filter(x => x.val === 1).map(x => bitsToMinterm(x.bits));
+        const result = simplifyMintermsByStepRules(ones);
+        positiveHtml += `<tr><td>${label}</td><td>${generateMiniKmap(ones, '1', result.groups)}</td><td class="logic-formula">${result.formula}</td></tr>`;
+      });
+      positiveHtml += '</table></div>';
+      positive.innerHTML = positiveHtml;
+
+      let negativeHtml = '<div class="section"><h2>負論理（<span class="double-overline">Za</span>〜<span class="double-overline">Zg</span>）のカルノー図と簡単化</h2><table><tr><th>出力</th><th>カルノー図</th><th>簡単化</th></tr>';
+      labels.forEach((label, i) => {
+        const zeros = outs[i].filter(x => x.val === 0).map(x => bitsToMinterm(x.bits));
+        const result = simplifyMintermsByStepRules(zeros);
+        negativeHtml += `<tr><td><span class="double-overline">${label}</span></td><td>${generateMiniKmap(zeros, '0', result.groups)}</td><td class="logic-formula">${result.formula}</td></tr>`;
+      });
+      negativeHtml += '</table></div>';
+      negative.innerHTML = negativeHtml;
+    }
+  </script>
 </body>
 </html>
