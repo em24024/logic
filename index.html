@@ -6,6 +6,19 @@
   <link rel="icon" type="image/png" href="7seg.png">
   <link rel="shortcut icon" type="image/png" href="7seg.png">
   <link rel="apple-touch-icon" href="7seg.png">
+  
+  <!-- PWA設定 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="論理回路">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  
+  <!-- manifest.jsonの代替 -->
+  <meta name="theme-color" content="#667eea">
+  <meta name="msapplication-navbutton-color" content="#667eea">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
   <style>
     * {
       box-sizing: border-box;
@@ -45,7 +58,7 @@
     .input-section p {
       color: #7f8c8d;
       margin-bottom: 25px;
-      font-size: 1.1em;
+      font-size: 1.5em;
     }
     
     .input-group {
@@ -122,7 +135,7 @@
     table { 
       border-collapse: collapse;
       width: 100%;
-      font-size: 13px;
+      font-size: 20px;
       background: white;
       border-radius: 8px;
       overflow: hidden;
@@ -263,7 +276,7 @@
       }
       
       table {
-        font-size: 11px;
+        font-size: 14px;
       }
       
       th, td {
